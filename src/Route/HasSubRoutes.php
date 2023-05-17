@@ -2,6 +2,7 @@
 
 namespace Exan\Router\Route;
 
+use Exan\Router\Exceptions\HttpNotFoundException;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -9,12 +10,21 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 trait HasSubRoutes
 {
-    public function resolve(ServerRequestInterface $request)
+    /**
+     * @throws HttpNotFoundException
+     */
+    public function resolve(ServerRequestInterface $request): ResolvedRoute
     {
         foreach ($this->routes as $route) {
             if ($route->matches($request)) {
-                return $route;
+                try {
+                    return $route->resolve();
+                } catch (HttpNotFoundException) {
+                    continue;
+                }
             }
         }
+
+        throw new HttpNotFoundException();
     }
 }

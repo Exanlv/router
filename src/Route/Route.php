@@ -7,21 +7,26 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class Route implements RouteInterface
 {
-    private $namedParams = [];
+    private $namedParams;
 
     public function __construct(
-        private string $method,
+        private string $httpMethod,
         private string $pattern,
+        private string $controller,
+        private string $method,
     ) {
     }
 
     public function matches(ServerRequestInterface $request): bool
     {
-        return $request->getMethod() === $this->method && $this->matchesPattern($request->getUri()->getPath());
+        return $request->getMethod() === $this->httpMethod && $this->matchesPattern($request);
     }
 
-    private function matchesPattern(string $uri): bool
+    private function matchesPattern(ServerRequestInterface $request): bool
     {
+        $this->namedParams = [];
+        $uri = $request->getUri()->getPath();
+
         $resolvedParams = [];
         $matchesPattern = preg_match($this->pattern, $uri, $resolvedParams);
 
@@ -36,9 +41,20 @@ class Route implements RouteInterface
 
             $this->namedParams[$key] = $value;
         }
+
+        return true;
     }
 
-    public function resolve(ServerRequestInterface $request)
+    public function resolve(ServerRequestInterface $request): ResolvedRoute
     {
+        if (!isset($this->namedParams)) {
+            $this->matchesPattern($request);
+        }
+
+        return new ResolvedRoute(
+            $this->controller,
+            $this->method,
+            $this->namedParams,
+        );
     }
 }
