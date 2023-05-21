@@ -21,25 +21,24 @@ class Router
     ) {
     }
 
-    public function run(ServerRequestInterface $request)
+    public function run(ServerRequestInterface $request): mixed
     {
         foreach ($this->routes as $route) {
             if ($route->matches($request)) {
                 try {
                     $resolvedRoute = $route->resolve($request);
 
-                    $this->resolve($resolvedRoute, $request);
+                    return $this->resolve($resolvedRoute, $request);
                 } catch (HttpNotFoundException) {
                     continue;
                 }
-                return;
             }
         }
 
         throw new HttpNotFoundException();
     }
 
-    private function resolve(ResolvedRoute $resolvedRoute, ServerRequestInterface $request)
+    private function resolve(ResolvedRoute $resolvedRoute, $request): mixed
     {
         if (!$this->container->has($resolvedRoute->controller)) {
             throw new HttpNotImplementedException();
@@ -56,7 +55,7 @@ class Router
             throw new HttpNotImplementedException();
         }
 
-        $controller->{$resolvedRoute->method}(
+        return $controller->{$resolvedRoute->method}(
             ...$this->buildArgs(
                 $reflectionMethod->getParameters(),
                 $resolvedRoute->resolvedParameters,
