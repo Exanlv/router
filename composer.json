@@ -10,5 +10,17 @@
     "require": {
         "psr/container": "^2.0",
         "psr/http-message": "^2.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.16",
+        "phpunit/phpunit": "^10.1",
+        "mockery/mockery": "^1.5"
+    },
+    "scripts": {
+        "cs": "./vendor/bin/php-cs-fixer fix src/ --rules=@PER --dry-run --diff",
+        "csf": "./vendor/bin/php-cs-fixer fix src/ --rules=@PER",
+
+        "test": "phpunit",
+        "test-coverage": "@php -d xdebug.mode=coverage ./vendor/bin/phpunit --coverage-html .phpunit.cache/cov-html"
     }
 }
